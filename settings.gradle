@@ -1,0 +1,2 @@
+include ':player-demo'
+include ':player-lib', ':player-demo'
