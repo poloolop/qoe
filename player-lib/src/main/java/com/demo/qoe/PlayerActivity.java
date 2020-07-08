@@ -29,11 +29,14 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.ui.DebugTextViewHelper;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 
@@ -49,11 +52,15 @@ public class PlayerActivity extends AppCompatActivity {
     private int currentWindow = 0;
     private long playbackPosition = 0;
     private PlaybackStateListener playbackStateListener;
+    private DefaultTrackSelector trackSelector;
+    private DefaultTrackSelector.Parameters trackSelectorParameters;
+
     private static final String TAG = PlayerActivity.class.getName();
 
     private TextView titleTextView;
     private TextView debugTextView;
     private DebugTextViewHelper debugViewHelper;
+    private AnalyticsTextViewHelper analyticsViewHelper;
 
 
     @Override
@@ -105,23 +112,29 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void initializePlayer() {
         if (player == null) {
-            DefaultTrackSelector trackSelector = new DefaultTrackSelector();
-            trackSelector.setParameters(trackSelector.buildUponParameters().setMaxVideoSizeSd());
+            TrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory();
+            trackSelector = new DefaultTrackSelector(/* context= */ this, trackSelectionFactory);
+            trackSelectorParameters = trackSelector.getParameters();
+            trackSelector.setParameters(trackSelectorParameters);
             player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
+            playerView.setPlayer(player);
+            // TODO: ADD Playlist
+            Uri uri = Uri.parse(getString(R.string.media_url_dash));
+            MediaSource mediaSource = buildMediaSource(uri);
+            player.setPlayWhenReady(playWhenReady);
+            player.seekTo(currentWindow, playbackPosition);
+            player.addListener(playbackStateListener);
+            player.addAnalyticsListener(new EventLogger(trackSelector));
+            player.addAnalyticsListener(new AnalyticsEvents(player, titleTextView));
+
+            // TODO: Remove DebugTextViewHelper. Implement AnalyticsTextViewHelper
+            debugViewHelper = new DebugTextViewHelper(player, debugTextView);
+            // TODO: Complete implementation
+            analyticsViewHelper = new AnalyticsTextViewHelper(player, debugTextView);
+            debugViewHelper.start();
+            player.prepare(mediaSource, false, false);
         }
-
-        playerView.setPlayer(player);
-        // TODO: ADD Playlist
-        Uri uri = Uri.parse(getString(R.string.media_url_dash));
-        MediaSource mediaSource = buildMediaSource(uri);
-        player.setPlayWhenReady(playWhenReady);
-        player.seekTo(currentWindow, playbackPosition);
-        player.addListener(playbackStateListener);
-        debugViewHelper = new DebugTextViewHelper(player, debugTextView);
-        debugViewHelper.start();
-        player.prepare(mediaSource, false, false);
-
     }
 
     private MediaSource buildMediaSource(Uri uri) {
