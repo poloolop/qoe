@@ -50,4 +50,15 @@ public class AnalyticsEvents implements AnalyticsListener {
         textView.setText("Counter, Width, Height: " + counter + "," +  width + ", " + height);
 
     }
+
+    @Override
+    public void onBandwidthEstimate(
+            EventTime eventTime, int totalLoadTimeMs, long totalBytesLoaded, long bitrateEstimate) {
+        // Do nothing.
+        Log.d(TAG, "ANALYTICS BANDWIDTH EVENT: " + eventTime + "total Load Time: "
+                + totalLoadTimeMs + ", total Bytes Loaded: " + totalBytesLoaded
+        + ",  bitrateEstimate: " + bitrateEstimate);
+        textView.setText("Bandwidth: " + bitrateEstimate/1024 + "Kbps");
+
+    }
 }

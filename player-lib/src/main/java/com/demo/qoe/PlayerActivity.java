@@ -59,7 +59,6 @@ public class PlayerActivity extends AppCompatActivity {
 
     private TextView titleTextView;
     private TextView debugTextView;
-    private DebugTextViewHelper debugViewHelper;
     private AnalyticsTextViewHelper analyticsViewHelper;
 
 
@@ -127,12 +126,8 @@ public class PlayerActivity extends AppCompatActivity {
             player.addListener(playbackStateListener);
             player.addAnalyticsListener(new EventLogger(trackSelector));
             player.addAnalyticsListener(new AnalyticsEvents(player, titleTextView));
-
-            // TODO: Remove DebugTextViewHelper. Implement AnalyticsTextViewHelper
-            debugViewHelper = new DebugTextViewHelper(player, debugTextView);
-            // TODO: Complete implementation
             analyticsViewHelper = new AnalyticsTextViewHelper(player, debugTextView);
-            debugViewHelper.start();
+            analyticsViewHelper.start();
             player.prepare(mediaSource, false, false);
         }
     }
@@ -173,7 +168,7 @@ public class PlayerActivity extends AppCompatActivity {
             playWhenReady = player.getPlayWhenReady();
             playbackPosition = player.getCurrentPosition();
             currentWindow = player.getCurrentWindowIndex();
-            debugViewHelper.stop();
+            analyticsViewHelper.stop();
             player.removeListener(playbackStateListener);
             player.release();
             player = null;
