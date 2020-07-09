@@ -29,6 +29,7 @@ import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -119,8 +120,8 @@ public class PlayerActivity extends AppCompatActivity {
 
             playerView.setPlayer(player);
             // TODO: ADD Playlist
-            Uri uri = Uri.parse(getString(R.string.media_url_dash));
-            MediaSource mediaSource = buildMediaSource(uri);
+            Uri uri = Uri.parse(getString(R.string.media_url_hls));
+            MediaSource mediaSource = buildMediaSourceHls(uri);
             player.setPlayWhenReady(playWhenReady);
             player.seekTo(currentWindow, playbackPosition);
             player.addListener(playbackStateListener);
@@ -132,12 +133,17 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private MediaSource buildMediaSource(Uri uri) {
+    private MediaSource buildMediaSourceDash(Uri uri) {
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, "exoplayer-codelab");
         DashMediaSource.Factory mediaSourceFactory = new DashMediaSource.Factory(dataSourceFactory);
         return mediaSourceFactory.createMediaSource(uri);
     }
 
+    private MediaSource buildMediaSourceHls(Uri uri) {
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this, "exoplayer-codelab");
+        HlsMediaSource.Factory mediaSourceFactory = new HlsMediaSource.Factory(dataSourceFactory);
+        return mediaSourceFactory.createMediaSource(uri);
+    }
 
     private class PlaybackStateListener implements Player.EventListener {
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
